@@ -48,16 +48,23 @@ def create_root() -> py_trees.behaviour.Behaviour:
 
        #locking in the coordinates for table1.
      table1_location=prototype_actions.GoTo.Goal()
-     table1_location.x=1.0
-     table1_location.y=0.0
-     table1_location.z=0.0 
+     table1_location.x=3.8
+     table1_location.y=-0.10
+     table1_location.z=-0.785 
+     table1_location.w=0.700
      feedback_1=prototype_actions.GoTo.Feedback()  
 
      home=prototype_actions.GoTo.Goal()
-     home.x=0.0
-     home.y=0.0
-     home.z=0.0
+     home.x=0.02
+     home.y=-0.06
+     home.z=0.01
+     home.w=0.999
 
+     kitchen_location=prototype_actions.GoTo.Goal()
+     kitchen_location.x=4.51
+     kitchen_location.y=4.13
+     kitchen_location.z=0.785
+     kitchen_location.w=0.700
 
      #getting the message from the ai and storing it in the ai_detected_table_number variable.  
      ai_detected_table_number_2BB=sub2BB(
@@ -143,7 +150,15 @@ def create_root() -> py_trees.behaviour.Behaviour:
          name="change the status of Table1_Order to clear",
           variable_name="Table1_Order",
            variable_value="clear",
-            overwrite=True)  
+            overwrite=True) 
+
+     go_home_after_taking_order_1=py_trees_ros.actions.ActionClient(
+        name="go home after delivery for table 1",
+        action_name='table_nav',
+        action_type=prototype_actions.GoTo,
+        action_goal=home,
+        generate_feedback_message=lambda msg: "{:.2f}%%".format(feedback_1.distance_left)
+          ) 
        
 
     #is it table 2 ? if so then go to table 2 and then change the status of table 2 to clear from waiting.
@@ -208,7 +223,7 @@ def create_root() -> py_trees.behaviour.Behaviour:
 
     #depending on the idiom one of the below sequence for order delivery is selected.   
      delivery_status_for_table_1_sequence=sequence(
-         name="delivery_status_table: 1",memory=False)
+         name="delivery_status_table: 1",memory=True)
      
      table_1_waiting_for_delivery=setBBVariable(
          name="delivery table 1:waiting",
@@ -258,13 +273,21 @@ def create_root() -> py_trees.behaviour.Behaviour:
      deliver_to_table1=sequence(
          name="deliver to table 1",
          memory=True)
+     
+     clear_table_1_delivery=setBBVariable(
+         name="clear_delivery_for_table_ 1",
+         variable_name="Table1_Delivery",
+         variable_value="clear",
+         overwrite=True
+         )
     
      go_to_kitchen_order_1_action=pyactions(
      name="go_to_kitchen_to get_order_1",
      action_type=prototype_actions.GoTo,
      action_name="table_nav",
-     action_goal=table2_location,
-     generate_feedback_message=lambda msg: "{:.2f}%%".format(feedback_1.distance_left)
+     action_goal=kitchen_location,
+     generate_feedback_message=lambda msg:
+     "{:.2f}%%".format(feedback_1.distance_left)
      )
 
      wait_for_food=pyactions(
@@ -292,15 +315,6 @@ def create_root() -> py_trees.behaviour.Behaviour:
      action_goal=action_,
      generate_feedback_message=lambda msg: msg.feedback.waiting
      )
-     
-
-
-     clear_table_1_delivery=setBBVariable(
-         name="clear_delivery_for_table_ 1",
-         variable_name="Table1_Delivery",
-         variable_value="clear",
-         overwrite=True
-         )
 
      go_home_after_delivery_1=py_trees_ros.actions.ActionClient(
         name="go home after delivery for table 1",
@@ -388,7 +402,7 @@ def create_root() -> py_trees.behaviour.Behaviour:
 #this sequence starts the navigation to table 1
      check_if_table_1_sequence.add_children(
          [go_to_table_1_action,
-          clear_table_1,take_order_action])
+          clear_table_1,take_order_action,go_home_after_taking_order_1])
      
 #this sequence starts the navigation to table 2     
      check_if_table_2_sequence.add_children(
@@ -407,11 +421,11 @@ def create_root() -> py_trees.behaviour.Behaviour:
      
 #then we will start the process of delivery from kitchen to table     
      deliver_to_table1.add_children(
-         [go_to_kitchen_order_1_action,
+         [clear_table_1_delivery,
+          go_to_kitchen_order_1_action,
           wait_for_food,
           deliver_to_table1_action,
           wait_for_food_to_be_picked_by_customer,
-          clear_table_1_delivery,
           go_home_after_delivery_1])
      
 #then we will start the process of delivery from kitchen to table          

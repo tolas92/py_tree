@@ -14,14 +14,14 @@ class FacePlayerCars():
     def __init__(self, root):
 
 
-        self.width=1024
-        self.height=600
+        self.width=1920
+        self.height=1080
         self.nomwidth = 800
         self.nomheight = 480
         self.eye_pos = 0
 
         self.eye_width = self.nom_x(100)
-        self.eye_height = self.nom_y(280)
+        self.eye_height = self.nom_y(10)
         self.blink_factor = 0.002
         self.x_centre = self.nom_x(400)
         self.y_centre = self.nom_y(100)
@@ -48,13 +48,19 @@ class FacePlayerCars():
         
         self.canvas = Canvas(self.tk, width=self.width, height=self.height)
         self.canvas.pack(anchor='nw')
-        self.canvas.configure(bg='black')
+        self.canvas.configure(bg='white')
 
         self.col_a = "#ff7b00"
         self.col_b = "#a65000"
 
+
         # Create eyes
         self.iris_colour = "teal"
+        self.iris_l=None
+        self.iris_r=None
+
+        self.counter = 0
+
 
         self.iris_l = self.canvas.create_rectangle(self.left_centre - self.iris_size/2, 
                                                 self.y_centre - self.iris_size/2, 
@@ -67,14 +73,14 @@ class FacePlayerCars():
                 self.right_centre + self.iris_size/2, 
                 self.y_centre + self.iris_size/2,
                 fill=self.iris_colour)
-                                      
-        self.counter = 0
 
         self.mouth_width = self.nom_x(300)
         self.mouth_height = self.nom_y(100)
         self.mouth_bottom = self.nom_y(400) + self.nom_y(50)
         self.mouth_left = self.x_centre - self.mouth_width / 2
         self.mouth_right = self.x_centre + self.mouth_width / 2
+
+
 
         # Create mouth
         self.mouth = self.canvas.create_rectangle(self.mouth_left, self.mouth_bottom - self.mouth_height, 
@@ -86,9 +92,55 @@ class FacePlayerCars():
 
         self.tk.update()
         self.counter += 1
+
+        if self.counter % 4 == 0:  # Check if the counter is even
+            self.iris_size = self.nom_x(0)
+            self.mouth_height=self.nom_y(0)
+            #self.mouth_width = self.nom_x(50)
+           
+        else:
+            self.iris_size = self.nom_x(150)
+            #self.mouth_width = self.nom_x(300)
+            self.mouth_height=self.nom_y(100)
+
+
+        # Update the coordinates of existing rectangles
+
+
         
-        self.set_pupil_centre('l', 140*self.eye_pos)
-        self.set_pupil_centre('r', 140*self.eye_pos)
+        self.canvas.coords(
+            self.iris_l,
+            self.left_centre - self.iris_size/2,
+            self.y_centre - self.iris_size/2,
+            self.left_centre + self.iris_size/2,
+            self.y_centre + self.iris_size/2
+        )
+
+        self.canvas.coords(
+            self.iris_r,
+            self.right_centre - self.iris_size/2,
+            self.y_centre - self.iris_size/2,
+            self.right_centre + self.iris_size/2,
+            self.y_centre + self.iris_size/2
+        )
+
+        self.canvas.coords(
+        self.mouth,
+        self.x_centre - self.mouth_width / 2,
+        self.mouth_bottom - self.mouth_height,
+        self.x_centre + self.mouth_width / 2,
+        self.mouth_bottom
+    )
+
+
+        
+        self.set_pupil_centre('l', 0)  # Close left eye
+        self.set_pupil_centre('r', 0)  # Close right eye
+
+        
+
+    
+            
         
    
     def end_fullscreen(self, event=None):

@@ -38,9 +38,9 @@ def generate_launch_description():
 
 
     ld.add_action(customer_menu_node)
-    ld.add_action(TimerAction(period=2.0,actions=[kitchen_table_node]))
+   # ld.add_action(TimerAction(period=2.0,actions=[kitchen_table_node]))
     ld.add_action(TimerAction(period=4.0,actions=[table_nav_node]))
-    ld.add_action(TimerAction(period=5.0,actions=[waiter_node]))
+    ld.add_action(TimerAction(period=7.0,actions=[waiter_node]))
 
     return ld
  

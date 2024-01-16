@@ -22,10 +22,10 @@ class UiNode(Node):
         
         self.use_cmd_vel_for_face = True
         self.disable_cursor = False
-        self.fullscreen = False
+        self.fullscreen = True
         
         # ROS2 publisher and subscribers
-        self.subscription = self.create_subscription(Twist, 'cmd_vel', self.cmd_vel_callback, 10)
+        self.subscription = self.create_subscription(Twist, '/diff_controller/cmd_vel_unstamped', self.cmd_vel_callback, 10)
         self.publisher=self.create_publisher(Food,'final_order',10)
 
         #ROS2 Action servers
@@ -49,7 +49,7 @@ class UiNode(Node):
        #   self.update_timer = self.create_timer(1.0, self.update_image_callback)
 
         if self.fullscreen:
-            self.ttk.bind("<Escape>", self.end_fullscreen)
+            #self.ttk.bind("<Escape>", self.end_fullscreen)
             self.ttk.attributes("-fullscreen",True)
 
         if self.disable_cursor:
@@ -60,9 +60,12 @@ class UiNode(Node):
 
         self.face_page = None
         self.button_page = None
+        self.button=None
+        self.face=None
 
         
-        self.build_button_page()
+        #self.build_button_page()
+        self.build_face_page()
         
     
     def build_face_page(self):
@@ -73,13 +76,23 @@ class UiNode(Node):
         self.face_page = None
 
     def update_image(self):
+
+        if self.button is True:
+            self.destroy_face_page()
+            self.build_button_page()
+            self.button=None
         
+        if self.face is True:
+            self.destroy_button_page()
+            self.build_face_page()
+            self.face=None
+
+
         if self.face_page:
             self.face_page.update_image()
 
         if self.button_page:
             self.button_page.update_image()
-            print(self.button_page.idli)
 
         return
     
@@ -102,6 +115,8 @@ class UiNode(Node):
     async def foodmenu_callback(self,goal_handle):
         feedback_msg=FoodMenu.Feedback()
         end_time=time.time()+5
+        self.button=True
+        time.sleep(1)
         while self.button_page.idli is None:
               
               feedback_msg.waiting="going"
@@ -118,12 +133,15 @@ class UiNode(Node):
         result=FoodMenu.Result()
         result.done=True
         self.button_page.idli=None
+        self.face=True
                       
         return result      
 
     async def table_callback(self,goal_handle):
         feedback_msg=FoodMenu.Feedback()
         end_time=time.time()+5
+        self.button=True
+        time.sleep(1)
         while self.button_page.order_picked is False:
               
               feedback_msg.waiting="going"
@@ -134,6 +152,7 @@ class UiNode(Node):
         result=FoodMenu.Result()
         result.done=True
         self.button_page.order_picked=False
+        self.face=True
                       
         return result   
     

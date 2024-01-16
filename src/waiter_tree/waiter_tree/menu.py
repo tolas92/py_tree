@@ -18,7 +18,7 @@ class ButtonPage():
         self.tk.configure(bg="white")
         self.tk.rowconfigure(tuple(range(1)), weight=1)
         self.tk.columnconfigure(tuple(range(1)), weight=1)
-        self.col_a = "orange"
+        self.col_a = "red"
         self.col_b = "red"
         button_width = 10  # Set the width of the buttons
         button_height = 5 
